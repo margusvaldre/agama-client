@@ -3,7 +3,6 @@
 # Please help Dora to find problems in this script
 
 echo "Starting agama-client from my repository!!"
-echo "TEST, TEST, TEST"
 
 for t in database_url database_name subnet; do
     if ! grep -q "^${t}=" /etc/agama-client/agama-client.conf; then
@@ -27,9 +26,10 @@ while true; do
     for vm_ip in $(fping -g $subnet -a 2>/dev/null); do
         # Getting content of agama page
         content=$(curl --connect-timeout 1 -w "%{http_code}" -s $vm_ip)
-        if test ${content} -ne 200; then
+        http_code="${content: -3}"
+        if [ "$http_code" -ne 200 ]; then
             # Log HTTP request failure and continue to next IP
-            logger "$0 HTTP request to $vm_ip failed with status code ${content}"
+            logger "$0 HTTP request to $vm_ip failed with status code $http_code"
             continue
         fi
         # Getting where it's hosted
