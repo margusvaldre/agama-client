@@ -3,6 +3,7 @@
 # Please help Dora to find problems in this script
 
 echo "Starting agama-client from my repository!!"
+echo "TEST, TEST, TEST"
 
 for t in database_url database_name subnet; do
     if ! grep -q "^${t}=" /etc/agama-client/agama-client.conf; then
