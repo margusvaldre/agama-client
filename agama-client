@@ -3,24 +3,29 @@
 # Please help Dora to find problems in this script
 
 echo "Starting agama-client from my repository!!"
+logger -p user.crit "$0 Starting agama-client from different repository - unknown behaviour!!"
 
 for t in database_url database_name subnet; do
     if ! grep -q "^${t}=" /etc/agama-client/agama-client.conf; then
-        logger "$0 Failed to get $t from config"
+        logger -p user.warning "$0 Failed to get $t from config"
         exit 1
     fi
 done
 
-which fping > /dev/null || { logger "$0 fping not found"; exit 1; }
+which fping > /dev/null || { logger -p user.warning "$0 fping not found"; exit 1; }
 
 db_url=$(grep "^database_url=" /etc/agama-client/agama-client.conf | sed 's/^.*=//')
 db_name=$(grep "^database_name=" /etc/agama-client/agama-client.conf | sed 's/^.*=//')
 subnet=$(grep "^subnet=" /etc/agama-client/agama-client.conf | sed 's/^.*=//')
 
+#########################
+echo "Beginning the process"
+
 echo "db_url=$db_url"
 echo "db_name=$db_name"
+#########################
 
-curl -i -XPOST "$db_url/query" --data-urlencode "q=CREATE DATABASE $db_name" 1>/dev/null 2>/dev/null || { logger "$0 Failed to create database"; exit 1; }
+curl -i -XPOST "$db_url/query" --data-urlencode "q=CREATE DATABASE $db_name" 1>/dev/null 2>/dev/null || { logger -p user.warning "$0 Failed to create database"; exit 1; }
 
 while true; do
     for vm_ip in $(fping -g $subnet -a 2>/dev/null); do
@@ -29,14 +34,14 @@ while true; do
         http_code="${content: -3}"
         if [ "$http_code" -ne 200 ]; then
             # Log HTTP request failure and continue to next IP
-            logger "$0 HTTP request to $vm_ip failed with status code $http_code"
+            logger -p user.debug "$0 HTTP request to $vm_ip failed with status code $http_code"
             continue
         fi
         # Getting where it's hosted
         vm_name=$(echo "$content" | grep "running on" | awk '{print $5}')
         if [ -z "$vm_name" ]; then
             # Log empty vm_name and continue to next IP
-            logger "$0 Empty vm_name for IP $vm_ip"
+            logger -p user.warning "$0 Empty vm_name for IP $vm_ip"
             continue
         fi
         # Number of items in agama
@@ -45,7 +50,7 @@ while true; do
         echo "Writing to InfluxDB: vm_name=$vm_name, items=$table_rows"
         # Write stats to InfluxDB
         response=$(curl -i -XPOST "${db_url}/write?db=${db_name}" --data-binary "agama-stats,name=${vm_name} items=${table_rows}")
-        echo "InfluxDB response: $response"
+        # echo "InfluxDB response: $response"
         # If hostname exists in agama - delete it
         if $(echo "$content" | grep -q $(hostname)); then
             for delete_url in $(echo "$content" | grep $(hostname) | grep -o '/items/.*/swap-state' | sed 's/swap-state/delete/'); do
