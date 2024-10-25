@@ -51,7 +51,7 @@ while true; do
         # Debugging output
         echo "Writing to InfluxDB: vm_name=$vm_name, items=$table_rows"
         # Write stats to InfluxDB
-        response=$(curl -i -XPOST "${db_url}/write?db=${db_name}" --data-binary "agama-stats,name=${vm_name} items=${table_rows}")
+        response=$(curl -i -XPOST "${db_url}/write?db=${db_name}" --data-binary "agama-stats,name=${vm_name} items=${table_rows}") 1>/dev/null 2>/dev/null
         # echo "InfluxDB response: $response"
         # If hostname exists in agama - delete it
         if $(echo "$content" | grep -q $(hostname)); then
