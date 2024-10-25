@@ -35,14 +35,14 @@ while true; do
         content=$(curl --connect-timeout 1 -w "%{http_code}" -s $vm_ip)
         http_code="${content: -3}"
         if [ "$http_code" -ne 200 ]; then
-            # Log HTTP request failure and continue to next IP
-            logger -p user.debug "$0 HTTP request to $vm_ip failed with status code $http_code"
+            # Log HTTP request failure and continue to next IP (commented out)
+            # logger -p user.debug "$0 HTTP request to $vm_ip failed with status code $http_code"
             continue
         fi
         # Getting where it's hosted
         vm_name=$(echo "$content" | grep "running on" | awk '{print $5}')
         if [ -z "$vm_name" ]; then
-            # Log empty vm_name and continue to next IP
+            # Log empty vm_name and continue to next IP 
             logger -p user.warning "$0 Empty vm_name for IP $vm_ip"
             continue
         fi
