@@ -4,7 +4,7 @@
 
 # I do not know who is Dora, but will see - maybe we will find something
 
-echo "Starting agama-client from my repository!!"
+echo "TESTING! Starting agama-client from my repository!!"
 logger -p user.crit "$0 Starting agama-client from different repository - unknown behaviour!!"
 
 for t in database_url database_name subnet; do
