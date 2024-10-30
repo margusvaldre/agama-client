@@ -1,11 +1,7 @@
 #!/bin/bash
 
-# Please help Dora to find problems in this script
-
-# I do not know who is Dora, but will see - maybe we will find something
-
 echo "TESTING! Starting agama-client from my repository!!"
-logger -p user.crit "$0 Starting agama-client from different repository - unknown behaviour!!"
+logger -p user.warning "$0 Starting agama-client from different repository - unknown behaviour!!"
 
 for t in database_url database_name subnet; do
     if ! grep -q "^${t}=" /etc/agama-client/agama-client.conf; then
@@ -20,12 +16,12 @@ db_url=$(grep "^database_url=" /etc/agama-client/agama-client.conf | sed 's/^.*=
 db_name=$(grep "^database_name=" /etc/agama-client/agama-client.conf | sed 's/^.*=//')
 subnet=$(grep "^subnet=" /etc/agama-client/agama-client.conf | sed 's/^.*=//')
 
-#########################
-echo "Beginning the process"
-
+echo "##################################################"
+echo "Beginning the process"                     
+echo "##################################################"
 echo "DATABASE IS HERE: db_url=$db_url"
 echo "DATABASE NAME IS db_name=$db_name"
-#########################
+echo "##################################################"
 
 curl -i -XPOST "$db_url/query" --data-urlencode "q=CREATE DATABASE $db_name" 1>/dev/null 2>/dev/null || { logger -p user.warning "$0 Failed to create database"; exit 1; }
 
@@ -43,7 +39,7 @@ while true; do
         vm_name=$(echo "$content" | grep "running on" | awk '{print $5}')
         if [ -z "$vm_name" ]; then
             # Log empty vm_name and continue to next IP 
-            logger -p user.warning "$0 Empty vm_name for IP $vm_ip"
+            logger -p user.info "$0 Empty vm_name for IP $vm_ip"
             continue
         fi
         # Number of items in agama
